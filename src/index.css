@@ -1,0 +1,88 @@
+/* index.css — Global styles with Tailwind v3 directives */
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Base resets */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Inter', system-ui, sans-serif;
+  background-color: #f8f8f8;
+  color: #0a0a0a;
+}
+
+/* Smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Custom scrollbar — shiny minimal look */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f0f0f0;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #1a1a1a;
+  border-radius: 3px;
+}
+
+/* Utility classes used throughout the app */
+@layer components {
+
+  /* Primary button — black with white text */
+  .btn-primary {
+    @apply bg-brand-black text-white font-semibold px-6 py-2.5 rounded-xl hover:bg-brand-black-light transition-all duration-200 shadow-md hover:shadow-lg active:scale-95;
+  }
+
+  /* Secondary button — white with black border */
+  .btn-secondary {
+    @apply bg-white text-brand-black font-semibold px-6 py-2.5 rounded-xl border-2 border-brand-black hover:bg-brand-white-mid transition-all duration-200 active:scale-95;
+  }
+
+  /* Accent button — amber gold */
+  .btn-accent {
+    @apply bg-brand-accent text-white font-semibold px-6 py-2.5 rounded-xl hover:bg-amber-600 transition-all duration-200 shadow-md hover:shadow-lg active:scale-95;
+  }
+
+  /* Clean card style */
+  .card {
+    @apply bg-white rounded-2xl shadow-card border border-gray-100;
+  }
+
+  /* Section container */
+  .container-main {
+    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+  }
+
+  /* Input field */
+  .input-field {
+    @apply w-full px-4 py-3 rounded-xl border border-gray-200 bg-white focus:outline-none focus:ring-2 focus:ring-brand-black focus:border-transparent transition-all duration-200 text-brand-black;
+  }
+
+  /* Badge styles */
+  .badge-green {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800;
+  }
+
+  .badge-amber {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800;
+  }
+
+  .badge-red {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800;
+  }
+
+  .badge-gray {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800;
+  }
+}
