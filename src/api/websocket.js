@@ -1,7 +1,7 @@
 let socket = null
 let listeners = []
 
-const wsBase = (import.meta.env.VITE_WS_BASE_URL || 'ws://localhost:8000').replace(/\/$/, '').replace(/\/ws$/, '')
+const wsBase = (import.meta.env.VITE_WS_BASE_URL || 'wss://backend-production-c10e.up.railway.app').replace(/\/$/, '').replace(/\/ws$/, '')
 
 export const connectWebSocket = (token, onMessage) => {
   if (socket && socket.readyState === WebSocket.OPEN) {
