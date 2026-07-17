@@ -33,7 +33,7 @@ const OrdersPage = () => {
     const fetchOrders = async () => {
         try {
             const res = await api.get('/orders/my/')
-            setOrders(res.data)
+            setOrders(res.data.results)
         } catch (err) {
             console.error(err)
         } finally {

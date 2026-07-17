@@ -27,8 +27,8 @@ const AdminDashboard = () => {
                 api.get('/auth/users/'),
             ])
             setRestaurants(restRes.data)
-            setOrders(ordersRes.data)
-            setUsers(usersRes.data)
+            setOrders(ordersRes.data.results)
+            setUsers(usersRes.data.results)
         } catch (err) {
             console.error(err)
         } finally {
