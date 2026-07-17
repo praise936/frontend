@@ -34,7 +34,7 @@ const RestaurantDashboard = () => {
             const restRes = await api.get('/restaurants/my-restaurant/')
             setRestaurant(restRes.data)
             const ordersRes = await api.get(`/orders/restaurant/${restRes.data.id}/`)
-            setOrders(ordersRes.data)
+            setOrders(ordersRes.data.results)
         } catch (err) {
             console.error(err)
         } finally {
