@@ -30,11 +30,11 @@ const Footer = () => {
         <footer className="bg-brand-black text-white mt-16">
 
             {/* Download banner — the main CTA section */}
-            <div className="border-b border-gray-800">
+           {/* <div className="border-b border-gray-800">
                 <div className="container-main py-12">
                     <div className="flex flex-col lg:flex-row items-center justify-between gap-8">
 
-                        {/* Left — text */}
+                        {/* Left — text */}{/*
                         <div className="text-center lg:text-left">
                             <div className="flex items-center justify-center lg:justify-start gap-2 mb-3">
                                 <Smartphone size={20} className="text-brand-accent" />
@@ -50,7 +50,7 @@ const Footer = () => {
                                 faster loading, real-time notifications, and works offline.
                             </p>
 
-                            {/* Feature pills */}
+                            {/* Feature pills */}{/*}
                             <div className="flex flex-wrap gap-2 mt-4 justify-center lg:justify-start">
                                 {[
                                     { icon: Zap, label: 'Instant loading' },
@@ -67,7 +67,7 @@ const Footer = () => {
                             </div>
                         </div>
 
-                        {/* Right — download button */}
+                        {/* Right — download button */}{/*}
                         <div className="flex flex-col items-center gap-3">
                             {isInstalled ? (
                                 // Already installed
@@ -119,14 +119,14 @@ const Footer = () => {
                                 </div>
                             )}
 
-                            {/* Platform hints */}
+                            {/* Platform hints */}{/*}
                             <p className="text-xs text-gray-600 text-center">
                                 Works on Android · iOS · Windows · Mac
                             </p>
                         </div>
                     </div>
                 </div>
-            </div>
+            </div>*/}
 
             {/* Bottom footer links */}
             <div className="container-main py-8">
