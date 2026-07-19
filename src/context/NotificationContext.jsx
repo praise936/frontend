@@ -46,6 +46,14 @@ export const NotificationProvider = ({ children }) => {
             toast(`🆕 ${data.restaurant_name} added: ${data.item?.name}`, {
                 icon: '✨',
             })
+        } else if (data.type === 'NEW_REVIEW') {
+            toast(`⭐ New ${data.review?.rating}-star review received!`, {
+                icon: '📝',
+            })
+        } else if (data.type === 'NEW_RESTAURANT') {
+            toast.success(`🎉 New restaurant: ${data.restaurant?.name}`)
+        } else if (data.type === 'ROLE_CHANGED') {
+            toast('Your account role has changed. Reloading...', { icon: '🔄' })
         }
     }
 

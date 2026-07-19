@@ -95,7 +95,7 @@ const LandingPage = () => {
                                     Fresh food, real-time updates, right at your fingertips.
                                 </p>
                                 <div className="mt-5 max-w-sm">
-                                    <SearchBar placeholder="What are you craving?" />
+                                    <SearchBar placeholder="search for restaurants..." />
                                 </div>
                             </div>
                         </div>
