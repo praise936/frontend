@@ -256,4 +256,3 @@ const AdminDashboard = () => {
 }
 
 export default AdminDashboard
-<td className="py-3 px-2">
