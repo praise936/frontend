@@ -54,6 +54,8 @@ export const NotificationProvider = ({ children }) => {
             toast.success(`🎉 New restaurant: ${data.restaurant?.name}`)
         } else if (data.type === 'ROLE_CHANGED') {
             toast('Your account role has changed. Reloading...', { icon: '🔄' })
+        } else if (data.type === 'REVIEW_DELETED') {
+            // Silent — the page listening for this updates its own list directly
         }
     }
 

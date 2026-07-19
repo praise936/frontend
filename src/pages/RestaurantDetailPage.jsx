@@ -54,7 +54,7 @@ const RestaurantDetailPage = () => {
             ])
             setRestaurant(restRes.data)
             setMenuItems(menuRes.data)
-            setReviews(reviewRes.data)
+            setReviews(reviewRes.data.results)
             setCategories(catRes.data)
         } catch (err) {
             console.error(err)

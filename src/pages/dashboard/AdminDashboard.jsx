@@ -6,6 +6,7 @@ import Navbar from '../../components/Navbar'
 import api from '../../api/axios'
 import { useAuth } from '../../context/AuthContext'
 import { addMessageListener } from '../../api/websocket'
+
 import toast from 'react-hot-toast'
 import { Store, Users, ShoppingBag, PlusCircle, XCircle, CheckCircle, TrendingUp, UserPlus, UserMinus, Trash2 } from 'lucide-react'
 
@@ -32,6 +33,15 @@ const AdminDashboard = () => {
             }
             if (data.type === 'RESTAURANT_DELETED') {
                 setRestaurants((prev) => prev.filter((r) => r.id !== data.restaurant_id))
+            }
+        })
+        return removeListener
+    }, [])
+    useEffect(() => {
+        const removeListener = addMessageListener((data) => {
+            if (data.type === 'NEW_ORDER') {
+                setOrders((prev) => [data.order, ...prev])
+                toast.success(`🛎️ New order #${data.order.id} — ${data.order.restaurant_name}`)
             }
         })
         return removeListener
@@ -142,7 +152,9 @@ const AdminDashboard = () => {
                                 {restaurants.map((r) => (
                                     <tr key={r.id} className="border-b border-gray-50 hover:bg-gray-50 transition-colors">
                                         <td className="py-3 px-2">
-                                            <div className="flex items-center gap-2">
+                                            <button
+                                                onClick={() => navigate(`/admin/restaurant/${r.id}`)}
+                                                className="flex items-center gap-2 hover:opacity-70 transition-opacity text-left">
                                                 {r.logo_url ? (
                                                     <img src={r.logo_url} className="w-8 h-8 rounded-lg object-cover" alt={r.name} />
                                                 ) : (
@@ -154,7 +166,7 @@ const AdminDashboard = () => {
                                                     <p className="font-semibold text-brand-black">{r.name}</p>
                                                     <p className="text-xs text-brand-gray">{r.cuisine_type}</p>
                                                 </div>
-                                            </div>
+                                            </button>
                                         </td>
                                         <td className="py-3 px-2 text-brand-gray">
                                             {r.manager_info ? r.manager_info.email : <span className="italic text-gray-400">No manager</span>}
@@ -244,3 +256,4 @@ const AdminDashboard = () => {
 }
 
 export default AdminDashboard
+<td className="py-3 px-2">
