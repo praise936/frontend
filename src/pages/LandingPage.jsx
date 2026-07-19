@@ -1,5 +1,6 @@
 // pages/LandingPage.jsx — Home page with restaurant cards
-
+import { addMessageListener } from '../api/websocket'
+import toast from 'react-hot-toast'
 import React, { useState, useEffect } from 'react'
 import { useAuth } from '../context/AuthContext'
 import { useSearchParams } from 'react-router-dom'
@@ -28,6 +29,16 @@ const LandingPage = () => {
         const search = searchParams.get('search') || ''
         fetchRestaurants(search)
     }, [searchParams])
+
+    useEffect(() => {
+        const removeListener = addMessageListener((data) => {
+            if (data.type === 'NEW_RESTAURANT') {
+                setRestaurants((prev) => [data.restaurant, ...prev])
+                toast.success(`🎉 New restaurant: ${data.restaurant.name}`)
+            }
+        })
+        return removeListener
+    }, [])
 
     const fetchRestaurants = async (search = '') => {
         setLoading(true)

@@ -6,7 +6,7 @@ import Navbar from '../components/Navbar'
 import api from '../api/axios'
 import { useCart, formatCurrency } from '../utils/helpers'
 import toast from 'react-hot-toast'
-import { ShoppingCart, Trash2, Plus, Minus, CheckCircle } from 'lucide-react'
+import { ShoppingCart, Trash2, Plus, Minus, CheckCircle, Phone, MapPin } from 'lucide-react'
 
 const CartPage = () => {
     const {
@@ -20,16 +20,29 @@ const CartPage = () => {
 
     const navigate = useNavigate()
     const [notes, setNotes] = useState('')
+    const [deliveryPhone, setDeliveryPhone] = useState('')
+    const [deliveryLocation, setDeliveryLocation] = useState('')
     const [placing, setPlacing] = useState(false)
 
     const handlePlaceOrder = async () => {
         if (cart.length === 0) return
 
+        if (!deliveryPhone.trim()) {
+            toast.error('Please enter your phone number')
+            return
+        }
+        if (!deliveryLocation.trim()) {
+            toast.error('Please enter your delivery location')
+            return
+        }
+
         setPlacing(true)
         try {
             const orderData = {
                 restaurant: cart[0].restaurant_id,
-                notes: notes,
+                notes,
+                delivery_phone: deliveryPhone,
+                delivery_location: deliveryLocation,
                 items: cart.map((item) => ({
                     menu_item: item.id,
                     quantity: item.quantity,
@@ -37,18 +50,25 @@ const CartPage = () => {
             }
 
             await api.post('/orders/place/', orderData)
-
-            // Clear cart immediately after successful order — before navigation
-            clearCart()
+            
             setNotes('')
-
+            setDeliveryPhone('')
+            setDeliveryLocation('')
+            
+            // ✅ Clear the cart
+            clearCart()
+            
+            // ✅ Also directly remove from localStorage as backup
+            localStorage.removeItem('foodcourt_cart')
+            
             toast.success('🎉 Order placed successfully!')
-
-            // Navigate to orders page
-            navigate('/orders')
+            
+            // ✅ Navigate after a small delay to ensure state updates
+            setTimeout(() => {
+                navigate('/orders')
+            }, 100)
 
         } catch (err) {
-            // Order failed — do NOT clear cart so user can retry
             toast.error(err.response?.data?.error || 'Failed to place order. Please try again.')
         } finally {
             setPlacing(false)
@@ -180,10 +200,45 @@ const CartPage = () => {
                                     <span>{formatCurrency(cartTotal)}</span>
                                 </div>
 
-                                {/* Special instructions */}
+                                {/* Delivery details — required */}
+                                <div className="border-t pt-4 space-y-3">
+                                    <p className="text-xs font-semibold text-brand-gray uppercase tracking-wider">
+                                        Delivery Details
+                                    </p>
+
+                                    <div>
+                                        <label className="flex items-center gap-1.5 text-sm font-semibold text-brand-black mb-1.5">
+                                            <Phone size={14} /> Phone Number *
+                                        </label>
+                                        <input
+                                            type="tel"
+                                            value={deliveryPhone}
+                                            onChange={(e) => setDeliveryPhone(e.target.value)}
+                                            placeholder="+254 700 000 000"
+                                            required
+                                            className="input-field text-sm"
+                                        />
+                                    </div>
+
+                                    <div>
+                                        <label className="flex items-center gap-1.5 text-sm font-semibold text-brand-black mb-1.5">
+                                            <MapPin size={14} /> Delivery Location *
+                                        </label>
+                                        <input
+                                            type="text"
+                                            value={deliveryLocation}
+                                            onChange={(e) => setDeliveryLocation(e.target.value)}
+                                            placeholder="e.g. Hostel B, Room 12"
+                                            required
+                                            className="input-field text-sm"
+                                        />
+                                    </div>
+                                </div>
+
+                                {/* Special instructions — optional */}
                                 <div>
                                     <label className="block text-sm font-semibold text-brand-black mb-1.5">
-                                        Special Instructions
+                                        Special Instructions (optional)
                                     </label>
                                     <textarea
                                         value={notes}
@@ -197,9 +252,12 @@ const CartPage = () => {
                                 {/* Place order button */}
                                 <button
                                     onClick={() => {
-                                        handlePlaceOrder();
-                                        clearCart();
-                                    }}
+                                        handlePlaceOrder()
+                                        
+
+                                    }
+                                        
+                                    }
                                     disabled={placing}
                                     className="btn-primary w-full flex items-center justify-center gap-2 py-3">
                                     {placing ? (

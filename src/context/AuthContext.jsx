@@ -2,40 +2,59 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react'
 import api from '../api/axios'
-import { connectWebSocket, disconnectWebSocket } from '../api/websocket'
+import { connectWebSocket, disconnectWebSocket, addMessageListener } from '../api/websocket'
 
 const AuthContext = createContext(null)
 
 export const AuthProvider = ({ children }) => {
-    const [user, setUser] = useState(null)          // current logged in user
-    const [loading, setLoading] = useState(true)    // initial auth check
+    const [user, setUser] = useState(null)
+    const [loading, setLoading] = useState(true)
 
-    // On app load, try to restore session from localStorage
     useEffect(() => {
         const token = localStorage.getItem('access_token')
         const savedUser = localStorage.getItem('user')
         if (token && savedUser) {
             setUser(JSON.parse(savedUser))
-            // Re-establish WebSocket connection
             connectWebSocket(token, () => { })
         }
         setLoading(false)
     }, [])
 
-    // context/AuthContext.jsx
-const login = async (identifier, password) => {  // Changed from 'username' to 'identifier'
-    const res = await api.post('/auth/login/', { identifier, password })
-    const { access, refresh, user: userData } = res.data
+    // If an admin promotes/demotes this user while they're browsing,
+    // flip their interface instantly — no logout/login needed.
+    useEffect(() => {
+        if (!user) return
 
-    localStorage.setItem('access_token', access)
-    localStorage.setItem('refresh_token', refresh)
-    localStorage.setItem('user', JSON.stringify(userData))
+        const removeListener = addMessageListener((data) => {
+            if (data.type === 'ROLE_CHANGED') {
+                const updatedUser = data.user
+                setUser(updatedUser)
+                localStorage.setItem('user', JSON.stringify(updatedUser))
 
-    setUser(userData)
-    connectWebSocket(access, () => { })
+                const token = localStorage.getItem('access_token')
+                disconnectWebSocket()
+                connectWebSocket(token, () => { })
 
-    return userData
-}
+                window.location.href = '/'
+            }
+        })
+
+        return removeListener
+    }, [user?.id])
+
+    const login = async (identifier, password) => {
+        const res = await api.post('/auth/login/', { identifier, password })
+        const { access, refresh, user: userData } = res.data
+
+        localStorage.setItem('access_token', access)
+        localStorage.setItem('refresh_token', refresh)
+        localStorage.setItem('user', JSON.stringify(userData))
+
+        setUser(userData)
+        connectWebSocket(access, () => { })
+
+        return userData
+    }
 
     const loginWithGoogle = async (idToken) => {
         const res = await api.post('/auth/google/', { id_token: idToken })
@@ -83,7 +102,6 @@ const login = async (identifier, password) => {  // Changed from 'username' to '
     )
 }
 
-// Custom hook for easy access to auth context
 export const useAuth = () => {
     const context = useContext(AuthContext)
     if (!context) throw new Error('useAuth must be used inside AuthProvider')

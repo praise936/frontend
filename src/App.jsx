@@ -20,6 +20,7 @@ import RestaurantDashboard from './pages/dashboard/RestaurantDashboard'
 import ManageMenu from './pages/dashboard/ManageMenu'
 import ManageOrders from './pages/dashboard/ManageOrders'
 import RegisterRestaurant from './pages/dashboard/RegisterRestaurant'
+import AssignManager from './pages/dashboard/AssignManager'
 import RestaurantSettings from './pages/dashboard/RestaurantSettings'
 
 // Route guards
@@ -58,6 +59,11 @@ export default function App() {
           <Route path="/admin/register-restaurant" element={
             <ProtectedRoute requiredRole="platform_admin">
               <RegisterRestaurant />
+            </ProtectedRoute>
+          } />
+          <Route path="/admin/assign-manager/:restaurantId" element={
+            <ProtectedRoute requiredRole="platform_admin">
+              <AssignManager />
             </ProtectedRoute>
           } />
 

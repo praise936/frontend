@@ -161,9 +161,18 @@ const ManageOrders = () => {
                                                 ))}
                                             </div>
 
+                                            <div>
+                                                <p className="text-xs font-semibold text-brand-gray uppercase tracking-wider mb-2">Delivery Details</p>
+                                                <div className="space-y-1 text-sm text-brand-black">
+                                                    <p><span className="text-brand-gray">Phone:</span> {order.delivery_phone}</p>
+                                                    <p><span className="text-brand-gray">Location:</span> {order.delivery_location}</p>
+                                                </div>
+                                            </div>
+
                                             {order.notes && (
-                                                <div className="bg-amber-50 rounded-xl p-3 text-sm text-amber-800">
-                                                    <span className="font-semibold">Note:</span> {order.notes}
+                                                <div>
+                                                    <p className="text-xs font-semibold text-brand-gray uppercase tracking-wider mb-1">Notes</p>
+                                                    <p className="text-sm text-brand-gray">{order.notes}</p>
                                                 </div>
                                             )}
 

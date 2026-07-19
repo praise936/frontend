@@ -317,7 +317,7 @@ const RestaurantDetailPage = () => {
             </div>
             <Footer />
             {/* Floating cart — mobile only, non-admin users */}
-            {user && user.role !== 'platform_admin' && (
+            {(!user || user.role !== 'platform_admin') && (
                 <FloatingCart cartCount={cartCount} />
             )}
         </div>

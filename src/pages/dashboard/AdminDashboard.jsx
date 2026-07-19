@@ -5,10 +5,12 @@ import { Link, useNavigate } from 'react-router-dom'
 import Navbar from '../../components/Navbar'
 import api from '../../api/axios'
 import { useAuth } from '../../context/AuthContext'
-import { Store, Users, ShoppingBag, PlusCircle, XCircle, CheckCircle, TrendingUp } from 'lucide-react'
+import { addMessageListener } from '../../api/websocket'
+import toast from 'react-hot-toast'
+import { Store, Users, ShoppingBag, PlusCircle, XCircle, CheckCircle, TrendingUp, UserPlus, UserMinus, Trash2 } from 'lucide-react'
 
 const AdminDashboard = () => {
-    const { user, logout } = useAuth()
+    const { user } = useAuth()
     const navigate = useNavigate()
     const [restaurants, setRestaurants] = useState([])
     const [orders, setOrders] = useState([])
@@ -17,6 +19,22 @@ const AdminDashboard = () => {
 
     useEffect(() => {
         fetchAll()
+    }, [])
+
+    useEffect(() => {
+        const removeListener = addMessageListener((data) => {
+            if (data.type === 'NEW_RESTAURANT') {
+                setRestaurants((prev) => [data.restaurant, ...prev])
+                toast.success(`New restaurant: ${data.restaurant.name}`)
+            }
+            if (data.type === 'RESTAURANT_UPDATED') {
+                setRestaurants((prev) => prev.map((r) => r.id === data.restaurant.id ? data.restaurant : r))
+            }
+            if (data.type === 'RESTAURANT_DELETED') {
+                setRestaurants((prev) => prev.filter((r) => r.id !== data.restaurant_id))
+            }
+        })
+        return removeListener
     }, [])
 
     const fetchAll = async () => {
@@ -40,9 +58,28 @@ const AdminDashboard = () => {
         const action = currentStatus === 'active' ? 'suspend' : 'activate'
         try {
             await api.post(`/restaurants/${restaurantId}/suspend/`, { action })
-            fetchAll()
         } catch (err) {
-            console.error(err)
+            toast.error('Action failed')
+        }
+    }
+
+    const handleRemoveManager = async (r) => {
+        if (!window.confirm(`Remove ${r.manager_info?.first_name || r.manager_info?.email} as manager? They will instantly become a regular customer.`)) return
+        try {
+            await api.post(`/restaurants/${r.id}/remove-manager/`)
+            toast.success('Manager removed')
+        } catch (err) {
+            toast.error(err.response?.data?.error || 'Failed to remove manager')
+        }
+    }
+
+    const handleDelete = async (r) => {
+        if (!window.confirm(`Delete "${r.name}" permanently? All orders, menu items, and reviews will be lost. This cannot be undone.`)) return
+        try {
+            await api.delete(`/restaurants/${r.id}/delete/`)
+            toast.success(`${r.name} deleted`)
+        } catch (err) {
+            toast.error(err.response?.data?.error || 'Failed to delete')
         }
     }
 
@@ -120,7 +157,7 @@ const AdminDashboard = () => {
                                             </div>
                                         </td>
                                         <td className="py-3 px-2 text-brand-gray">
-                                            {r.manager_info?.email}
+                                            {r.manager_info ? r.manager_info.email : <span className="italic text-gray-400">No manager</span>}
                                         </td>
                                         <td className="py-3 px-2">
                                             <span className={r.status === 'active' ? 'badge-green' : 'badge-red'}>
@@ -131,15 +168,35 @@ const AdminDashboard = () => {
                                             <span className="font-semibold text-brand-black">⭐ {r.average_rating}</span>
                                         </td>
                                         <td className="py-3 px-2">
-                                            <button
-                                                onClick={() => handleSuspendToggle(r.id, r.status)}
-                                                className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all
-                          ${r.status === 'active'
-                                                        ? 'bg-red-50 text-red-600 hover:bg-red-100'
-                                                        : 'bg-green-50 text-green-600 hover:bg-green-100'
-                                                    }`}>
-                                                {r.status === 'active' ? <><XCircle size={12} />Suspend</> : <><CheckCircle size={12} />Activate</>}
-                                            </button>
+                                            <div className="flex items-center gap-2 flex-wrap">
+                                                {r.manager_info ? (
+                                                    <button
+                                                        onClick={() => handleRemoveManager(r)}
+                                                        className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold bg-red-50 text-red-600 hover:bg-red-100 transition-all">
+                                                        <UserMinus size={12} />Remove Manager
+                                                    </button>
+                                                ) : (
+                                                    <button
+                                                        onClick={() => navigate(`/admin/assign-manager/${r.id}?name=${encodeURIComponent(r.name)}`)}
+                                                        className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold bg-blue-50 text-blue-600 hover:bg-blue-100 transition-all">
+                                                        <UserPlus size={12} />Add Manager
+                                                    </button>
+                                                )}
+                                                <button
+                                                    onClick={() => handleSuspendToggle(r.id, r.status)}
+                                                    className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all
+                                                        ${r.status === 'active'
+                                                            ? 'bg-amber-50 text-amber-700 hover:bg-amber-100'
+                                                            : 'bg-green-50 text-green-600 hover:bg-green-100'
+                                                        }`}>
+                                                    {r.status === 'active' ? <><XCircle size={12} />Suspend</> : <><CheckCircle size={12} />Activate</>}
+                                                </button>
+                                                <button
+                                                    onClick={() => handleDelete(r)}
+                                                    className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold bg-red-50 text-red-600 hover:bg-red-100 transition-all">
+                                                    <Trash2 size={12} />Delete
+                                                </button>
+                                            </div>
                                         </td>
                                     </tr>
                                 ))}
