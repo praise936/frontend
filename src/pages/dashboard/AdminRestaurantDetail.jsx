@@ -5,6 +5,7 @@ import api from '../../api/axios'
 import { addMessageListener } from '../../api/websocket'
 import toast from 'react-hot-toast'
 import { ArrowLeft, ShoppingBag, Calendar, CalendarDays, Star, Trash2 } from 'lucide-react'
+import { DollarSign, X } from 'lucide-react'
 
 const AdminRestaurantDetail = () => {
     const { id } = useParams()
@@ -19,6 +20,10 @@ const AdminRestaurantDetail = () => {
     const [nextPage, setNextPage] = useState(null)
     const [loadingMore, setLoadingMore] = useState(false)
 
+    const [showFeeModal, setShowFeeModal] = useState(false)
+    const [feeInput, setFeeInput] = useState('')
+    const [savingFee, setSavingFee] = useState(false)
+
     useEffect(() => {
         fetchStats()
     }, [])
@@ -28,7 +33,13 @@ const AdminRestaurantDetail = () => {
             if (data.type === 'REVIEW_DELETED' && view === 'reviews') {
                 setListData((prev) => prev.filter((r) => r.id !== data.review_id))
             }
+            if (data.type === 'ORDER_COMPLETED') {
+                fetchStats()
+            }
             if (data.type === 'NEW_ORDER' && data.order.restaurant === Number(id)) {
+                fetchStats()
+            }
+            if (data.type === 'FEE_UPDATED') {
                 fetchStats()
             }
         })
@@ -43,6 +54,31 @@ const AdminRestaurantDetail = () => {
             toast.error('Failed to load stats')
         } finally {
             setLoading(false)
+        }
+    }
+
+
+    const openFeeModal = () => {
+        setFeeInput(String(stats?.platform_fee_percent ?? '10'))
+        setShowFeeModal(true)
+    }
+
+    const handleSaveFee = async () => {
+        const value = parseFloat(feeInput)
+        if (isNaN(value) || value < 0 || value > 100) {
+            toast.error('Enter a number between 0 and 100')
+            return
+        }
+        setSavingFee(true)
+        try {
+            await api.post(`/restaurants/${id}/set-fee/`, { platform_fee_percent: value })
+            toast.success(`Fee set to ${value}%`)
+            setShowFeeModal(false)
+            fetchStats()
+        } catch (err) {
+            toast.error(err.response?.data?.error || 'Failed to update fee')
+        } finally {
+            setSavingFee(false)
         }
     }
 
@@ -156,7 +192,13 @@ const AdminRestaurantDetail = () => {
                     <ArrowLeft size={16} /> {view === 'stats' ? 'Back to Admin' : 'Back to Stats'}
                 </button>
 
-                <h1 className="text-2xl font-black text-brand-black mb-6">{stats?.restaurant?.name}</h1>
+                
+                <div className="flex items-center justify-between mb-6">
+                    <h1 className="text-2xl font-black text-brand-black">{stats?.restaurant?.name}</h1>
+                    <button onClick={openFeeModal} className="btn-secondary flex items-center gap-2 text-sm">
+                        <DollarSign size={16} /> Set Platform Fee
+                    </button>
+                </div>
 
                 {view === 'stats' ? (
                     <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
@@ -171,7 +213,32 @@ const AdminRestaurantDetail = () => {
                                 <p className="text-2xl font-black text-brand-black">{card.value}</p>
                                 <p className="text-sm text-brand-gray mt-0.5">{card.label}</p>
                             </button>
+                            
                         ))}
+
+
+                        <h2 className="font-bold text-brand-black text-lg mt-8 mb-3">Earnings — Today</h2>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                            <div className="card p-5">
+                                <p className="text-xl font-black text-brand-black">KSh {Number(stats?.revenue_today ?? 0).toLocaleString()}</p>
+                                <p className="text-sm text-brand-gray mt-1">Gross Revenue</p>
+                            </div>
+                            <div className="card p-5">
+                                <p className="text-xl font-black text-red-600">KSh {Number(stats?.fee_today ?? 0).toLocaleString()}</p>
+                                <p className="text-sm text-brand-gray mt-1">Platform Fee Earned</p>
+                            </div>
+                        </div>
+                        <h2 className="font-bold text-brand-black text-lg mb-3">Earnings — This Month</h2>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="card p-5">
+                                <p className="text-xl font-black text-brand-black">KSh {Number(stats?.revenue_month ?? 0).toLocaleString()}</p>
+                                <p className="text-sm text-brand-gray mt-1">Gross Revenue</p>
+                            </div>
+                            <div className="card p-5">
+                                <p className="text-xl font-black text-red-600">KSh {Number(stats?.fee_month ?? 0).toLocaleString()}</p>
+                                <p className="text-sm text-brand-gray mt-1">Platform Fee Earned</p>
+                            </div>
+                        </div>
                     </div>
                 ) : listLoading ? (
                     <div className="space-y-3">
@@ -248,8 +315,33 @@ const AdminRestaurantDetail = () => {
                     </div>
                 )}
             </div>
+            {showFeeModal && (
+                    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+                        <div className="bg-white rounded-2xl p-6 w-full max-w-sm">
+                            <div className="flex items-center justify-between mb-2">
+                                <h3 className="font-bold text-brand-black text-lg">Set Platform Fee</h3>
+                                <button onClick={() => setShowFeeModal(false)}><X size={20} className="text-brand-gray" /></button>
+                            </div>
+                            <p className="text-sm text-brand-gray mb-4">Percentage of each completed order this restaurant pays to the platform</p>
+                            <input
+                                type="number"
+                                value={feeInput}
+                                onChange={(e) => setFeeInput(e.target.value)}
+                                className="input-field text-center text-lg"
+                                placeholder="e.g. 8"
+                            />
+                            <div className="flex gap-3 mt-5">
+                                <button onClick={() => setShowFeeModal(false)} className="btn-secondary flex-1">Cancel</button>
+                                <button onClick={handleSaveFee} disabled={savingFee} className="btn-primary flex-1">
+                                    {savingFee ? 'Saving...' : 'Save'}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
         </div>
     )
 }
 
 export default AdminRestaurantDetail
+

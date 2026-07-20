@@ -4,6 +4,7 @@ import React from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider } from './context/AuthContext'
 import { NotificationProvider } from './context/NotificationContext'
+import OfflineBanner from './components/OfflineBanner'
 
 // Pages
 import AdminRegisterPage from './pages/AdminRegisterPage'
@@ -31,6 +32,7 @@ export default function App() {
   return (
     <AuthProvider>
       <NotificationProvider>
+        <OfflineBanner />
         <Routes>
           {/* Public routes */}
           <Route path="/" element={<LandingPage />} />
