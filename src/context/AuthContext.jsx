@@ -3,6 +3,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react'
 import api from '../api/axios'
 import { connectWebSocket, disconnectWebSocket, addMessageListener } from '../api/websocket'
+import { registerWebPush } from '../api/webPush'
 
 const AuthContext = createContext(null)
 
@@ -35,6 +36,8 @@ export const AuthProvider = ({ children }) => {
                 disconnectWebSocket()
                 connectWebSocket(token, () => { })
 
+                registerWebPush()
+
                 window.location.href = '/'
             }
         })
@@ -53,6 +56,8 @@ export const AuthProvider = ({ children }) => {
         setUser(userData)
         connectWebSocket(access, () => { })
 
+        registerWebPush()
+
         return userData
     }
 
@@ -66,6 +71,8 @@ export const AuthProvider = ({ children }) => {
 
         setUser(userData)
         connectWebSocket(access, () => { })
+
+        registerWebPush()
         return userData
     }
 
@@ -79,6 +86,8 @@ export const AuthProvider = ({ children }) => {
 
         setUser(userData)
         connectWebSocket(access, () => { })
+
+        registerWebPush()
         return userData
     }
 
